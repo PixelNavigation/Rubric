@@ -7,32 +7,57 @@ from sentence_transformers import SentenceTransformer, util
 import language_tool_python
 import spacy
 import os
+try:
+    import streamlit as st
+    _HAS_STREAMLIT = True
+except Exception:
+    st = None
+    _HAS_STREAMLIT = False
 
+# configure local nltk data directory so downloads don't require global write
 nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
 if not os.path.exists(nltk_data_path):
-    os.makedirs(nltk_data_path)
-# Ensure the path is set before any downloads or calls
-nltk.data.path.append(nltk_data_path) 
+    os.makedirs(nltk_data_path, exist_ok=True)
+nltk.data.path.append(nltk_data_path)
 
-# 2. Download the common 'punkt' resource
 try:
     nltk.download("punkt", download_dir=nltk_data_path, quiet=True)
 except Exception:
     pass
 
-# 3. 🚨 NEW FIX: Download the specific 'punkt_tab' resource
 try:
-    # This is the resource required by the traceback
     nltk.download("punkt_tab", download_dir=nltk_data_path, quiet=True)
-except Exception as e:
-    # If this fails, it is the root cause. Check logs if error persists.
-    print(f"Error downloading punkt_tab: {e}")
+except Exception:
     pass
 
-tool = language_tool_python.LanguageTool("en-US")
-sentiment = SentimentIntensityAnalyzer()
-embed_model = SentenceTransformer("all-MiniLM-L6-v2")
-nlp = spacy.load("en_core_web_md")
+# Heavy models loader: use Streamlit cache_resource if available so
+# models are loaded only once per deployment. Otherwise fallback to a
+# simple singleton to avoid repeated heavy initialization during tests.
+_MODEL_SINGLETON = None
+
+if _HAS_STREAMLIT:
+    @st.cache_resource
+    def initialize_models():
+        return {
+            "tool": language_tool_python.LanguageTool("en-US"),
+            "sentiment": SentimentIntensityAnalyzer(),
+            "embed_model": SentenceTransformer("all-MiniLM-L6-v2"),
+            "nlp": spacy.load("en_core_web_md"),
+        }
+else:
+    def initialize_models():
+        global _MODEL_SINGLETON
+        if _MODEL_SINGLETON is None:
+            _MODEL_SINGLETON = {
+                "tool": language_tool_python.LanguageTool("en-US"),
+                "sentiment": SentimentIntensityAnalyzer(),
+                "embed_model": SentenceTransformer("all-MiniLM-L6-v2"),
+                "nlp": spacy.load("en_core_web_md"),
+            }
+        return _MODEL_SINGLETON
+
+def get_models():
+    return initialize_models()
 
 with open("rubric.json") as f:
     RUBRIC = json.load(f)
@@ -40,6 +65,8 @@ with open("rubric.json") as f:
 
 # NAME DETECTION (spaCy + regex)
 def detect_name_spacy(text):
+    models = get_models()
+    nlp = models["nlp"]
     doc = nlp(text)
     names = [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
 
@@ -73,6 +100,8 @@ def ttr_score(text):
 
 # GRAMMAR SCORE
 def grammar_score(text):
+    models = get_models()
+    tool = models["tool"]
     matches = tool.check(text)
 
     true_errors = 0
@@ -160,6 +189,8 @@ def filler_word_score(text):
 
 # SENTIMENT SCORE
 def sentiment_score(text):
+    models = get_models()
+    sentiment = models["sentiment"]
     vs = sentiment.polarity_scores(text)
     val = (vs["compound"] * 0.7) + (vs["pos"] * 0.3)
     val = max(0, min(val, 1))
@@ -203,15 +234,22 @@ hobby_phrases_base = [
     "playing cricket", "reading books", "playing football", "listening to music",
     "singing", "dancing", "painting", "drawing", "coding", "watching movies"
 ]
-hobby_embeddings = embed_model.encode(hobby_phrases_base, convert_to_tensor=True)
+_HOBBY_EMB = None
 
 def semantic_hobby_detect(text):
+    models = get_models()
+    nlp = models["nlp"]
+    embed_model = models["embed_model"]
+    global _HOBBY_EMB
+    if _HOBBY_EMB is None:
+        _HOBBY_EMB = embed_model.encode(hobby_phrases_base, convert_to_tensor=True)
+
     doc = nlp(text)
     phrases = []
 
     for chunk in doc.noun_chunks:
         emb = embed_model.encode(chunk.text, convert_to_tensor=True)
-        sim = util.cos_sim(emb, hobby_embeddings).max().item()
+        sim = util.cos_sim(emb, _HOBBY_EMB).max().item()
         if sim > 0.55:
             phrases.append(chunk.text)
 
