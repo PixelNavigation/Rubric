@@ -31,7 +31,7 @@ with col1:
         st.metric("Sentence count", f"{sentences}")
 
 with col2:
-    duration = st.number_input("Audio duration (seconds)", min_value=1, value=52, step=1)
+    duration = st.number_input("Audio duration (seconds)", min_value=1, value=60, step=1)
     st.write(" ")
     st.write(" ")
     st.write(" ")
