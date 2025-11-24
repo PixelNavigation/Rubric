@@ -6,8 +6,28 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sentence_transformers import SentenceTransformer, util
 import language_tool_python
 import spacy
+import os
 
-nltk.download("punkt")
+nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
+if not os.path.exists(nltk_data_path):
+    os.makedirs(nltk_data_path)
+# Ensure the path is set before any downloads or calls
+nltk.data.path.append(nltk_data_path) 
+
+# 2. Download the common 'punkt' resource
+try:
+    nltk.download("punkt", download_dir=nltk_data_path, quiet=True)
+except Exception:
+    pass
+
+# 3. 🚨 NEW FIX: Download the specific 'punkt_tab' resource
+try:
+    # This is the resource required by the traceback
+    nltk.download("punkt_tab", download_dir=nltk_data_path, quiet=True)
+except Exception as e:
+    # If this fails, it is the root cause. Check logs if error persists.
+    print(f"Error downloading punkt_tab: {e}")
+    pass
 
 tool = language_tool_python.LanguageTool("en-US")
 sentiment = SentimentIntensityAnalyzer()
