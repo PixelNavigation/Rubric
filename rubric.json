@@ -14,15 +14,22 @@
     }
   },
 
-  "keywords": {
-    "weight": 30,
+ "keywords": {
+    "weight_mandatory": 20,
+    "weight_optional": 10,
 
-    "mandatory": ["name", "age", "class", "school", "family"],
+    "mandatory_score_each": 4,
+    "optional_score_each": 2,
+
+    "mandatory": [
+      "name",
+      "age",
+      "class/school",
+      "family",
+      "hobbies/interests"
+    ],
+
     "optional": [
-      "hobby",
-      "hobbies",
-      "playing",
-      "goal",
       "dream",
       "ambition",
       "fun fact",
@@ -30,10 +37,7 @@
       "interesting",
       "achievement",
       "strength"
-    ],
-
-    "mandatory_score_each": 4,
-    "optional_score_each": 2
+    ]
   },
 
   "flow": {
