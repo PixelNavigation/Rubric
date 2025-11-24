@@ -9,7 +9,7 @@ import spacy
 
 nltk.download("punkt")
 
-tool = language_tool_python.LanguageTool("en-US")
+tool = language_tool_python.LanguageToolPublicAPI("en-US")
 sentiment = SentimentIntensityAnalyzer()
 embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 nlp = spacy.load("en_core_web_md")
