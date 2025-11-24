@@ -14,33 +14,35 @@
     }
   },
 
-  "mandatory_keywords": {
-    "weight": 20,
-    "keywords": ["name", "age", "class", "school", "family", "hobbies", "interests"]
-  },
+  "keywords": {
+    "weight": 30,
 
-  "optional_keywords": {
-    "weight": 10,
-    "keywords": [
-      "about family",
-      "origin",
-      "ambition",
+    "mandatory": ["name", "age", "class", "school", "family"],
+    "optional": [
+      "hobby",
+      "hobbies",
+      "playing",
       "goal",
       "dream",
+      "ambition",
       "fun fact",
-      "interesting thing",
-      "unique point",
-      "strength",
-      "achievement"
-    ]
+      "unique",
+      "interesting",
+      "achievement",
+      "strength"
+    ],
+
+    "mandatory_score_each": 4,
+    "optional_score_each": 2
   },
 
   "flow": {
     "weight": 5,
     "order": [
       "salutation",
-      "basic_details",
-      "additional_details",
+      "name",
+      "mandatory",
+      "optional",
       "closing"
     ]
   },
@@ -80,7 +82,10 @@
 
   "filler_words": {
     "weight": 15,
-    "list": ["um", "uh", "like", "you know", "so", "actually", "basically", "right", "i mean", "well", "kinda", "sort of", "okay", "hmm", "ah"],
+    "list": [
+      "um", "uh", "like", "you know", "so", "actually", "basically",
+      "right", "i mean", "well", "kinda", "sort of", "okay", "hmm", "ah"
+    ],
     "ranges": {
       "0_3": 15,
       "4_6": 12,
