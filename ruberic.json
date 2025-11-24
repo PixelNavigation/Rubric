@@ -16,7 +16,7 @@
 
   "mandatory_keywords": {
     "weight": 20,
-    "keywords": ["name", "age", "class", "school", "family"]
+    "keywords": ["name", "age", "class", "school", "family", "hobbies", "interests"]
   },
 
   "optional_keywords": {
