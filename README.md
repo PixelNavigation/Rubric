@@ -79,9 +79,9 @@ Ensure your project directory is organized as follows:
 /Your-Project-Folder/
 ├── app.py
 ├── scorer.py
-├── rubric.json  (Must contain scoring rules, weights, and keywords)
+├── rubric.json  (Contains scoring rules, weights, and keywords)
 ├── requirements.txt
-├── packages.txt  (System dependencies for Linux/Cloud deployment)
+├── packages.txt  (System dependencies for local windows/Linux based Cloud deployment)
 ├── .streamlit/
 │   └── secrets.toml (Configuration for environment variables)
 └── .gitignore
